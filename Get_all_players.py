@@ -7,6 +7,7 @@ years played for each player whose last name starts with A. (obviously we repeat
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
+import numpy as np
 
 
 alphabet = 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'
@@ -48,6 +49,7 @@ for last_name_letter in alphabet:
         player_id += 1
 
 df_players = pd.DataFrame(players, columns=["Player ID", "Name", "href", "position", "start year", "end year"])
+df_players['statistics recieved?'] = np.zeros(len(df_players))# adding a column to record if we have their statistics or not.
 
 df_players.to_csv('/Users/jakehirst/Desktop/fantasy_football_predictors/All_players_and_ids.csv')
     
