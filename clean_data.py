@@ -21,17 +21,20 @@ def fill_nan_age_values(group):
     return group
 
 '''replaces any values in the given column that contains 'missed season' with "N/A". also does this for nan values.'''
-def replace_missed_season_with_NA(df, column_name):
+def replace_missed_season_with_NA(df, column_names):
     # Replace values containing 'missed season' with "N/A"
-    df[column_name] = df[column_name].apply(lambda x: "N/A" if pd.notna(x) and 'Missed season' in x else x)
-    df[column_name] = df[column_name].apply(lambda x: "N/A" if pd.isna(x) else x)
+    for column_name in column_names:
+        df[column_name] = df[column_name].apply(lambda x: "N/A" if pd.notna(x) and 'Missed season' in x else x)
+        df[column_name] = df[column_name].apply(lambda x: "N/A" if pd.isna(x) else x)
     return df
 
 '''replaces any values in the given column that contains 'missed season' with 0. also does this for nan values.'''
-def replace_missed_season_with_ZERO(df, column_name):
+def replace_missed_season_with_ZERO(df, column_names):
     # Replace values containing 'missed season' with "N/A"
-    df[column_name] = df[column_name].apply(lambda x: 0 if pd.notna(x) and 'Missed season' in x else x)
-    df[column_name] = df[column_name].apply(lambda x: 0 if pd.isna(x) else x)
+    for column_name in column_names:
+        df[column_name] = pd.to_numeric(df[column_name], errors='coerce') #cast all values to numeric, which the ones with 'missed season' will be Nan
+        df[column_name] = df[column_name].apply(lambda x: 0 if pd.isna(x) else x) #replace all Nan values (missed season) with 0
+        df[column_name] = df[column_name].astype(float)#cast to float to make sure theyre all the same type.
     return df
 
 '''only keep rows taht have positions that are in the valid_positions array.'''
@@ -74,41 +77,36 @@ def main():
     # table.to_csv('/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics_clean/O_Line_table_clean.csv')
         
     '''cleaning RB table'''
-    table = pd.read_csv('/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics/RB_table.csv', index_col=0)
-    table = table[table['Player ID'].notna()] #get rid of empty rows 
-    columns_to_keep = ['Name', 'Year', 'Age', 'Tm', 'Pos', 'No.', 'G', 'GS', 'Att', 'Yds',
-       'TD', '1D', 'Succ%', 'Lng', 'Y/A', 'Y/G', 'A/G', 'Tgt', 'Rec', 'Yds.1',
-       'Y/R', 'TD.1', '1D.1', 'Succ%.1', 'Lng.1', 'R/G', 'Y/G.1', 'Ctch%',
-       'Y/Tgt', 'Touch', 'Y/Tch', 'YScm', 'RRTD', 'Fmb', 'AV', 'Player ID', 'Awards']
-    table = remove_unecessary_columns(table, columns_to_keep)
+    # table = pd.read_csv('/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics/RB_table.csv', index_col=0)
+    # table = table[table['Player ID'].notna()] #get rid of empty rows 
+    # columns_to_keep = ['Name', 'Year', 'Age', 'Tm', 'Pos', 'No.', 'G', 'GS', 'Att', 'Yds',
+    #    'TD', '1D', 'Succ%', 'Lng', 'Y/A', 'Y/G', 'A/G', 'Tgt', 'Rec', 'Yds.1',
+    #    'Y/R', 'TD.1', '1D.1', 'Succ%.1', 'Lng.1', 'R/G', 'Y/G.1', 'Ctch%',
+    #    'Y/Tgt', 'Touch', 'Y/Tch', 'YScm', 'RRTD', 'Fmb', 'AV', 'Player ID', 'Awards']
+    # table = remove_unecessary_columns(table, columns_to_keep)    
     # table = add_injured_column(table)
     # table = table.groupby('Player ID').apply(fill_nan_age_values) #grouping by Player ID, fill the nan value of the age column
     # table = table.reset_index(drop=True) #need to do this to get rid of the playerID group by...
 
-    # table = replace_missed_season_with_NA(table, 'Tm')
-    # table = replace_missed_season_with_NA(table, 'Pos')
-    # table = replace_missed_season_with_NA(table, 'No.')
-    # table = replace_missed_season_with_NA(table, 'Awards')
+    # table = replace_missed_season_with_NA(table, ['Tm', 'Pos', 'No.', 'Awards'])
 
+    # table['Ctch%'] = table['Ctch%'].str.rstrip('%')  #get rid of % sign in Ctch% column
+    # # table['AV'] = pd.to_numeric(table['AV'], errors='coerce') #need to cast all AV to numeric that replace_missed_season_with_ZERO() can do its work.
+    # table = replace_missed_season_with_ZERO(table, ['G', 'GS', 'AV', 'Att', 'Yds', 'TD', '1D', 'Succ%', 'Lng', 'Y/A', 'Y/G', 'A/G', 'Tgt', 'Rec', 'Yds.1',
+    #                                                 'Y/R', 'TD.1', '1D.1', 'Succ%.1', 'Lng.1', 'R/G', 'Y/G.1', 'Ctch%',
+    #                                                 'Y/Tgt', 'Touch', 'Y/Tch', 'YScm', 'RRTD', 'Fmb', 'AV'])#replace missed seasons with 0 for all the columns in the array
+    
+    
+    
+    # # #get rid of rows where the player wasnt an offensive lineman
+    # table = get_rid_of_invalid_positions(table, 'Pos',  ['RB', 'FB', 'RB/FB', 'HB', 'N/A', 'LHB', 'FB/RB', 'RHB',
+    #                                                     'FB-RB', 'HB/FB', 'TE/FB', 'FB/HB', 'SE', 'RH', 'LE', 'KR', 'LH', 'HB-RB'])
 
-    # table = replace_missed_season_with_ZERO(table, 'G')#replaced missed seasons with 0 games played
-    # table['G'] = table['G'].astype(int)#cast Games played to int
-    
-    # table = replace_missed_season_with_ZERO(table, 'GS')#replaced missed seasons with 0 games started
-    # table['GS'] = table['GS'].astype(float)#cast Games started to int
-    
-    # table = replace_missed_season_with_ZERO(table, 'AV')#replaced missed seasons with 0 games started
-    # table['AV'] = table['AV'].astype(float)#cast Games started to int
-    
-    # #get rid of rows where the player wasnt an offensive lineman
-    # table = get_rid_of_invalid_positions(table, 'Pos',  ['T', 'C', 'LG', 'G', 'LT', 'RG', 'RT', 'LS', 'RT/RG', 
-    #                                                     'LT/RT', 'N/A', 'RT-T', 'RG/C', 'LT/LG', 'LG/RG', 'RT/LG', 'LG/RT',
-    #                                                     'C/LT', 'RG/LT', 'LT/RG', 'RG/LG', 'LT-T', 'C/RG', 'RG/RT', 'RT/LT', 
-    #                                                     'G-RG', 'LG/C', 'C/LG', 'RG-T', 'G-LG', 'T/TE', 'G-LT', 'LG/LT',
-    #                                                     'C-LG', 'G/T', 'C/T', 'G/C', 'LT/C', 'LG-RG', 'G-T', 'C/G', 'TOG', 'RT/LT-T', 'C/RT',
-    #                                                     'C-LS', 'LG-T', 'C-G', 'RT/RDE', 'G-G/C', 'G-LG/RG-OL', 'RT/C', 'G-RT'])
+    # table.to_csv('/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics_clean/RB_table_clean.csv')
 
-    # table.to_csv('/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics_clean/O_Line_table_clean.csv')
+    '''cleaning WR table'''
+
+    
     
     print('here')
 
