@@ -43,71 +43,34 @@ def get_rid_of_invalid_positions(df, column_name, valid_positions):
     return df
 
 def main():
-    '''cleaning oline table'''
-    # table = pd.read_csv('/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics/O_LINE_table.csv')
-    # columns_to_keep = ['Name', 'Year','Age', 'Tm', 'Pos', 'No.','G','GS','AV', 'Awards', 'Player ID']
-    # table = remove_unecessary_columns(table, columns_to_keep)
-    # table = add_injured_column(table)
-    # table = table.groupby('Player ID').apply(fill_nan_age_values) #grouping by Player ID, fill the nan value of the age column
-    # table = table.reset_index(drop=True) #need to do this to get rid of the playerID group by...
-
-    # table = replace_missed_season_with_NA(table, 'Tm')
-    # table = replace_missed_season_with_NA(table, 'Pos')
-    # table = replace_missed_season_with_NA(table, 'No.')
-    # table = replace_missed_season_with_NA(table, 'Awards')
-
-
-    # table = replace_missed_season_with_ZERO(table, 'G')#replaced missed seasons with 0 games played
-    # table['G'] = table['G'].astype(int)#cast Games played to int
-    
-    # table = replace_missed_season_with_ZERO(table, 'GS')#replaced missed seasons with 0 games started
-    # table['GS'] = table['GS'].astype(float)#cast Games started to int
-    
-    # table = replace_missed_season_with_ZERO(table, 'AV')#replaced missed seasons with 0 games started
-    # table['AV'] = table['AV'].astype(float)#cast Games started to int
-    
-    # #get rid of rows where the player wasnt an offensive lineman
-    # table = get_rid_of_invalid_positions(table, 'Pos',  ['T', 'C', 'LG', 'G', 'LT', 'RG', 'RT', 'LS', 'RT/RG', 
-    #                                                     'LT/RT', 'N/A', 'RT-T', 'RG/C', 'LT/LG', 'LG/RG', 'RT/LG', 'LG/RT',
-    #                                                     'C/LT', 'RG/LT', 'LT/RG', 'RG/LG', 'LT-T', 'C/RG', 'RG/RT', 'RT/LT', 
-    #                                                     'G-RG', 'LG/C', 'C/LG', 'RG-T', 'G-LG', 'T/TE', 'G-LT', 'LG/LT',
-    #                                                     'C-LG', 'G/T', 'C/T', 'G/C', 'LT/C', 'LG-RG', 'G-T', 'C/G', 'TOG', 'RT/LT-T', 'C/RT',
-    #                                                     'C-LS', 'LG-T', 'C-G', 'RT/RDE', 'G-G/C', 'G-LG/RG-OL', 'RT/C', 'G-RT'])
-
-    # table.to_csv('/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics_clean/O_Line_table_clean.csv')
         
-    '''cleaning RB table'''
-    # table = pd.read_csv('/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics/RB_table.csv', index_col=0)
-    # table = table[table['Player ID'].notna()] #get rid of empty rows 
-    # columns_to_keep = ['Name', 'Year', 'Age', 'Tm', 'Pos', 'No.', 'G', 'GS', 'Att', 'Yds',
-    #    'TD', '1D', 'Succ%', 'Lng', 'Y/A', 'Y/G', 'A/G', 'Tgt', 'Rec', 'Yds.1',
-    #    'Y/R', 'TD.1', '1D.1', 'Succ%.1', 'Lng.1', 'R/G', 'Y/G.1', 'Ctch%',
-    #    'Y/Tgt', 'Touch', 'Y/Tch', 'YScm', 'RRTD', 'Fmb', 'AV', 'Player ID', 'Awards']
-    # table = remove_unecessary_columns(table, columns_to_keep)    
-    # table = add_injured_column(table)
-    # table = table.groupby('Player ID').apply(fill_nan_age_values) #grouping by Player ID, fill the nan value of the age column
-    # table = table.reset_index(drop=True) #need to do this to get rid of the playerID group by...
-
-    # table = replace_missed_season_with_NA(table, ['Tm', 'Pos', 'No.', 'Awards'])
-
-    # table['Ctch%'] = table['Ctch%'].str.rstrip('%')  #get rid of % sign in Ctch% column
-    # # table['AV'] = pd.to_numeric(table['AV'], errors='coerce') #need to cast all AV to numeric that replace_missed_season_with_ZERO() can do its work.
-    # table = replace_missed_season_with_ZERO(table, ['G', 'GS', 'AV', 'Att', 'Yds', 'TD', '1D', 'Succ%', 'Lng', 'Y/A', 'Y/G', 'A/G', 'Tgt', 'Rec', 'Yds.1',
-    #                                                 'Y/R', 'TD.1', '1D.1', 'Succ%.1', 'Lng.1', 'R/G', 'Y/G.1', 'Ctch%',
-    #                                                 'Y/Tgt', 'Touch', 'Y/Tch', 'YScm', 'RRTD', 'Fmb', 'AV'])#replace missed seasons with 0 for all the columns in the array
-    
-    
-    
-    # # #get rid of rows where the player wasnt an offensive lineman
-    # table = get_rid_of_invalid_positions(table, 'Pos',  ['RB', 'FB', 'RB/FB', 'HB', 'N/A', 'LHB', 'FB/RB', 'RHB',
-    #                                                     'FB-RB', 'HB/FB', 'TE/FB', 'FB/HB', 'SE', 'RH', 'LE', 'KR', 'LH', 'HB-RB'])
-
-    # table.to_csv('/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics_clean/RB_table_clean.csv')
 
     '''cleaning WR table'''
+    table = pd.read_csv('/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics/WR_table.csv', index_col=0)
+    table = table[table['Player ID'].notna()] #get rid of empty rows 
+    columns_to_keep = ['Name', 'Year', 'Age', 'Tm', 'Pos', 'No.', 'G', 'GS', 'Tgt', 'Rec',
+       'Yds', 'Y/R', 'TD', '1D', 'Succ%', 'Lng', 'R/G', 'Y/G', 'Ctch%',
+       'Y/Tgt', 'Att', 'Yds.1', 'TD.1', '1D.1', 'Succ%.1', 'Lng.1', 'Y/A',
+       'Y/G.1', 'A/G', 'Touch', 'Y/Tch', 'YScm', 'RRTD', 'Fmb', 'AV', 'Player ID', 'Awards']
+    table = remove_unecessary_columns(table, columns_to_keep)    
+    table = add_injured_column(table)
+    table = table.groupby('Player ID').apply(fill_nan_age_values) #grouping by Player ID, fill the nan value of the age column
+    table = table.reset_index(drop=True) #need to do this to get rid of the playerID group by...
 
+    table = replace_missed_season_with_NA(table, ['Tm', 'Pos', 'No.', 'Awards'])
+
+    table['Ctch%'] = table['Ctch%'].str.rstrip('%')  #get rid of % sign in Ctch% column
+    # table['AV'] = pd.to_numeric(table['AV'], errors='coerce') #need to cast all AV to numeric that replace_missed_season_with_ZERO() can do its work.
+    table = replace_missed_season_with_ZERO(table, ['G', 'GS', 'AV', 'Att', 'Yds', 'TD', '1D', 'Succ%', 'Lng', 'Y/A', 'Y/G', 'A/G', 'Tgt', 'Rec', 'Yds.1',
+                                                    'Y/R', 'TD.1', '1D.1', 'Succ%.1', 'Lng.1', 'R/G', 'Y/G.1', 'Ctch%',
+                                                    'Y/Tgt', 'Touch', 'Y/Tch', 'YScm', 'RRTD', 'Fmb', 'AV'])#replace missed seasons with 0 for all the columns in the array
     
     
+    #get rid of rows where the player wasnt an WR
+    table = get_rid_of_invalid_positions(table, 'Pos', ['WR', 'FL', 'N/A'])
+    
+    table.to_csv('/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics_clean/WR_table_clean.csv')
+
     print('here')
 
 if __name__ == "__main__":
