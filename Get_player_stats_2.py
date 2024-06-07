@@ -140,68 +140,73 @@ def get_player_table(url, retries=3, delay=2, backoff_factor=1.5, timeout=10):
 
 
 
-
-i = -1
-all_players_path = '/Users/jakehirst/Desktop/fantasy_football_predictors/All_players_and_ids.csv'
-all_players = pd.read_csv(all_players_path, index_col=0) #players, their player ID, and the website to get their career stats on.
-
-#go through each player in the player list, and get their yearly statistics.
-while i+1 < len(all_players):
-    i+=1 #go to next player
+def main():
+    i = -1
+    all_players_path = '/Users/jakehirst/Desktop/fantasy_football_predictors/All_players_and_ids.csv'
     all_players = pd.read_csv(all_players_path, index_col=0) #players, their player ID, and the website to get their career stats on.
-    player = all_players.iloc[i]
-    start_year = player['start year']
-    
-    #we will limit our dataset to players that started their careers after 1960
-    if(start_year < 1960):
-        print('player is too old')
-        continue
-    #have gotten some nan positions
-    elif(type(player['position']) == float and m.isnan(player['position'])):
-        print('no position reported')
-        continue
-    #only doing offensive positions for now
-    elif not is_offensive_player(player['position']):
-        print('not an offensive player')
-        continue
-    # try to prevent duplicate rows
-    elif(player['statistics recieved?'] == 1.0):
-        print('statistics already gotten')
-        continue
 
-    
+    #go through each player in the player list, and get their yearly statistics.
+    while i+1 < len(all_players):
+        i+=1 #go to next player
+        all_players = pd.read_csv(all_players_path, index_col=0) #players, their player ID, and the website to get their career stats on.
+        player = all_players.iloc[i]
+        start_year = player['start year']
         
-    name = player['Name']
-    player_id = player['Player ID']
-    url = player['href']
-    player_table = get_player_table(url)
-    
-    #clean up year column
-    # player_table['Year'] = player_table['Year'].str.replace('+', '', regex=False)
-    # player_table['Year'] = player_table['Year'].astype(str).str.replace('+', '', regex=False) #removing the + from the year column
-    #remove the total career stats and anything after that.
-    try:
-        career_index = player_table[player_table['Year'] == 'Career'].index[0]
-        player_table = player_table.iloc[:career_index]
-    except:
-        print('\n No total career stats column?')
-    #remove nan values in the year column
-    player_table = player_table[player_table['Year'].notna()]
+        #we will limit our dataset to players that started their careers after 1960
+        if(start_year < 1960):
+            print('player is too old')
+            continue
+        #have gotten some nan positions
+        elif(type(player['position']) == float and m.isnan(player['position'])):
+            print('no position reported')
+            continue
+        #only doing offensive positions for now
+        elif not is_offensive_player(player['position']):
+            print('not an offensive player')
+            continue
+        # try to prevent duplicate rows
+        elif(player['statistics recieved?'] == 1.0):
+            print('statistics already gotten')
+            continue
 
-    player_table['Year'] = player_table['Year'].str.replace('*', '', regex=False)
-    player_table['Year'] = player_table['Year'].replace("", pd.NA)
-    player_table['Year'] = player_table['Year'].astype(str)    # Convert the "Year" column to string to handle <NA> properly
-    player_table = player_table[~player_table['Year'].str.contains('Career|yrs|<NA>|nan|1 yr', na=False)]  # Filter out rows where "Year" is 'Career', contains 'yrs', or is <NA>, or is nan
-    player_table['Year'] = player_table['Year'].astype(int)    # Convert the "Year" column to an int
-    print('\n')
-    print(player)
-    print(player_table)
+        
+            
+        name = player['Name']
+        player_id = player['Player ID']
+        url = player['href']
+        player_table = get_player_table(url)
+        
+        #clean up year column
+        # player_table['Year'] = player_table['Year'].str.replace('+', '', regex=False)
+        # player_table['Year'] = player_table['Year'].astype(str).str.replace('+', '', regex=False) #removing the + from the year column
+        #remove the total career stats and anything after that.
+        try:
+            career_index = player_table[player_table['Year'] == 'Career'].index[0]
+            player_table = player_table.iloc[:career_index]
+        except:
+            print('\n No total career stats column?')
+        #remove nan values in the year column
+        player_table = player_table[player_table['Year'].notna()]
+
+        player_table['Year'] = player_table['Year'].str.replace('*', '', regex=False)
+        player_table['Year'] = player_table['Year'].replace("", pd.NA)
+        player_table['Year'] = player_table['Year'].astype(str)    # Convert the "Year" column to string to handle <NA> properly
+        player_table = player_table[~player_table['Year'].str.contains('Career|yrs|<NA>|nan|1 yr', na=False)]  # Filter out rows where "Year" is 'Career', contains 'yrs', or is <NA>, or is nan
+        player_table['Year'] = player_table['Year'].astype(int)    # Convert the "Year" column to an int
+        print('\n')
+        print(player)
+        print(player_table)
+        
+        
+        add_player_stats_to_table(player_table, player) # add the player stats to the appropriate position table
+        #mark that player as collected and save it in all_players
+        all_players.loc[all_players['Player ID'] == player['Player ID'], 'statistics recieved?'] = 1.0
+        all_players.to_csv(all_players_path)
+        
+        print('here')
+        # player['statistics recieved'] += 1.0
     
+
     
-    add_player_stats_to_table(player_table, player) # add the player stats to the appropriate position table
-    #mark that player as collected and save it in all_players
-    all_players.loc[all_players['Player ID'] == player['Player ID'], 'statistics recieved?'] = 1.0
-    all_players.to_csv(all_players_path)
-    
-    print('here')
-    # player['statistics recieved'] += 1.0
+if __name__ == "__main__":
+    main()

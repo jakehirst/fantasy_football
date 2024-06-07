@@ -8,7 +8,23 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import numpy as np
+from Get_player_stats_2 import is_offensive_lineman
 
+
+def get_player_fantasy_points(href):
+    player_letter = href.split('/')[-2]
+    player_code = href.split('/')[-1].split('.')[0]
+    fantasy_url = f'https://www.pro-football-reference.com/players/{player_letter}/{player_code}/fantasy/'
+    response = requests.get(fantasy_url)
+    
+    player_table = pd.read_html(response.text, header=2)[0]
+    fantasy_pts_per_year_table = player_table.copy()
+    fantasy_pts_per_year_table = fantasy_pts_per_year_table[['Unnamed: 0', 'FantPt']]
+    #TODO add name and player ID columns... 
+    #TODO  then delete the last row which is a "totals" row...
+    #TODO  and then save them to a table somewhere...
+    #TODO when you add them to your og table, you need to add the receptions to the points... cause we do ppr.
+    return
 
 alphabet = 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'
 alphabet = alphabet.split(' ')
@@ -37,7 +53,7 @@ for last_name_letter in alphabet:
             player_info['Player ID'] = player_id
             player_info['Name'] = a_tag.text
             player_info['href'] = f"https://www.pro-football-reference.com{a_tag['href']}"
-        
+            fantasy_points = get_player_fantasy_points(player_info['href'])
         # Extract player position and years
         text_parts = p.get_text().split(' ')
         if len(text_parts) >= 2:
