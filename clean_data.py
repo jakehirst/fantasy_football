@@ -5,7 +5,17 @@ import matplotlib.pyplot as plt
 
 
 '''only keeps the columns in the table with the column names in columns_to_keep'''
-def remove_unecessary_columns(df, columns_to_keep):
+def remove_unecessary_columns(df, position):
+    if(position in ['WR', 'RB', 'TE']):
+        columns_to_keep = ['Name', 'Year', 'Age', 'Tm', 'Pos', 'No.', 'G', 'GS', 'Tgt', 'Rec',
+        'Yds', 'Y/R', 'TD', '1D', 'Succ%', 'Lng', 'R/G', 'Y/G', 'Ctch%',
+        'Y/Tgt', 'Att', 'Yds.1', 'TD.1', '1D.1', 'Succ%.1', 'Lng.1', 'Y/A',
+        'Y/G.1', 'A/G', 'Touch', 'Y/Tch', 'YScm', 'RRTD', 'Fmb', 'AV', 'Player ID', 'Awards']
+    elif(position == "QB"):
+        columns_to_keep = ['Player ID', 'Name', 'Year', 'Age', 'Tm', 'Pos', 'No.', 'G', 'GS',
+       'QBrec', 'Cmp', 'Att', 'Cmp%', 'Yds', 'TD', 'TD%', 'Int', 'Int%', 'Lng',
+       'Y/A', 'AY/A', 'Y/C', 'Y/G', 'Rate', 'Sk', 'Yds.1', 'Sk%', 'NY/A',
+       'ANY/A', '4QC', 'GWD', 'AV', '1D', 'Succ%', 'Awards', 'QBR']
     df = df[columns_to_keep]    
     return df
 
@@ -46,13 +56,11 @@ def main():
         
 
     '''cleaning WR table'''
-    table = pd.read_csv('/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics/WR_table.csv', index_col=0)
+    position = 'QB'
+    table = pd.read_csv('/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics/QB_table.csv', index_col=0)
     table = table[table['Player ID'].notna()] #get rid of empty rows 
-    columns_to_keep = ['Name', 'Year', 'Age', 'Tm', 'Pos', 'No.', 'G', 'GS', 'Tgt', 'Rec',
-       'Yds', 'Y/R', 'TD', '1D', 'Succ%', 'Lng', 'R/G', 'Y/G', 'Ctch%',
-       'Y/Tgt', 'Att', 'Yds.1', 'TD.1', '1D.1', 'Succ%.1', 'Lng.1', 'Y/A',
-       'Y/G.1', 'A/G', 'Touch', 'Y/Tch', 'YScm', 'RRTD', 'Fmb', 'AV', 'Player ID', 'Awards']
-    table = remove_unecessary_columns(table, columns_to_keep)    
+
+    table = remove_unecessary_columns(table, position)    
     table = add_injured_column(table)
     table = table.groupby('Player ID').apply(fill_nan_age_values) #grouping by Player ID, fill the nan value of the age column
     table = table.reset_index(drop=True) #need to do this to get rid of the playerID group by...
@@ -67,9 +75,9 @@ def main():
     
     
     #get rid of rows where the player wasnt an WR
-    table = get_rid_of_invalid_positions(table, 'Pos', ['WR', 'FL', 'N/A'])
+    table = get_rid_of_invalid_positions(table, 'Pos', ['TE', 'N/A'])
     
-    table.to_csv('/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics_clean/WR_table_clean.csv')
+    table.to_csv('/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics_clean/TE_table_clean.csv')
 
     print('here')
 
