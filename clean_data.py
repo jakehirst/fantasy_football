@@ -16,6 +16,8 @@ def remove_unecessary_columns(df, position):
        'QBrec', 'Cmp', 'Att', 'Cmp%', 'Yds', 'TD', 'TD%', 'Int', 'Int%', 'Lng',
        'Y/A', 'AY/A', 'Y/C', 'Y/G', 'Rate', 'Sk', 'Yds.1', 'Sk%', 'NY/A',
        'ANY/A', '4QC', 'GWD', 'AV', '1D', 'Succ%', 'Awards', 'QBR']
+    elif(position == "O_LINE"):
+        columns_to_keep = ['Player ID', 'Name', 'Year', 'Age', 'Tm', 'Pos', 'No.', 'G', 'GS', 'AV', 'Awards']
     df = df[columns_to_keep]    
     return df
 
@@ -48,38 +50,73 @@ def replace_missed_season_with_ZERO(df, column_names):
     return df
 
 '''only keep rows taht have positions that are in the valid_positions array.'''
-def get_rid_of_invalid_positions(df, column_name, valid_positions):
+def get_rid_of_invalid_positions(df, column_name, position):
+    if(position == 'QB'):
+        valid_positions = ['QB', 'N/A']
+    elif(position == 'RB'):
+        valid_positions = ['RB', 'FB', 'HB', 'HB/FB', 'HB-RB', 'RHB', 'RB/FB', 'FB-RB', 'FB/HB', 'RH', 'LH', 'LHB', 'RHB',  'N/A']
+    elif(position == 'WR'):
+        valid_positions = ['WR', 'N/A']
+    elif(position == 'TE'):
+        valid_positions = ['TE', 'N/A']
+    elif(position == 'O_LINE'):
+        valid_positions = ['T', 'C', 'LG', 'G', 'LT', 'RG', 'RT', 'RT/RG', 'LT/RT', 'N/A', 'RT-T', 'RG/C',
+       'LT/LG', 'LG/RG', 'RT/LG', 'LG/RT', 'C/LT', 'RG/LT', 'LT/RG', 'RG/LG', 'LT-T', 'C/RG', 'RG/RT', 'RT/LT', 
+       'G-RG', 'LG/C', 'C/LG', 'RG-T', 'G-LG', 'G-LT', 'LG/LT', 'C-LG', 'G/T', 'C/T', 'G/C', 'LT/C', 'LG-RG', 
+       'G-T', 'C/G', 'RT/LT-T', 'C/RT', 'LG-T', 'C-G', 'G-G/C', 'G-LG/RG-OL', 'RT/C', 'G-RT']
+    else:
+        print('what position is this?')
+        
     df = df[df[column_name].isin(valid_positions)]
     return df
 
+'''identifies the columns which should contain numeric values like yards, games played, etc. So that we can replace "Missed Season" rows in the column with 0 later.'''
+def identify_numeric_columns(table):
+    # Function to check if a string can be converted to a float
+    def is_convertible_to_float(value):
+        try:
+            float(value)
+            return True
+        except ValueError:
+            if(value is np.nan): return True #nan values could be true...
+            return False
+
+    columns_to_convert = []
+    for column in table.columns:
+        # Check a sample of values to see if they should be numeric
+        if table[column].apply(is_convertible_to_float).sum() > 0.75 * len(table):  # More than 50% convertible
+            columns_to_convert.append(column)
+    return columns_to_convert
+
+
+
 def main():
+    positions = ['QB', 'TE', 'WR', 'RB', 'O_LINE']
+    positions = ['O_LINE']
+    for position in positions:
+        # position = 'QB'
+        table = pd.read_csv(f'/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics/{position}_table.csv', index_col=0)
+        table = table[table['Player ID'].notna()] #get rid of empty rows 
+
+        table = remove_unecessary_columns(table, position)    
+        table = add_injured_column(table)
+        table = table.groupby('Player ID').apply(fill_nan_age_values) #grouping by Player ID, fill the nan value of the age column
+        table = table.reset_index(drop=True) #need to do this to get rid of the playerID group by...
+
+        table = replace_missed_season_with_NA(table, ['Tm', 'Pos', 'No.', 'Awards'])
+
+        numeric_columns = identify_numeric_columns(table)
+        # table['Ctch%'] = table['Ctch%'].str.rstrip('%')  #get rid of % sign in Ctch% column
+        # table['AV'] = pd.to_numeric(table['AV'], errors='coerce') #need to cast all AV to numeric that replace_missed_season_with_ZERO() can do its work.
+        table = replace_missed_season_with_ZERO(table, numeric_columns)#replace missed seasons with 0 for all the columns in the array
         
+        
+        #get rid of rows where the player wasnt an WR
+        table = get_rid_of_invalid_positions(table, 'Pos', position)
+        print('here')
+        
+        table.to_csv(f'/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics_clean/{position}_table_clean.csv')
 
-    '''cleaning WR table'''
-    position = 'QB'
-    table = pd.read_csv('/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics/QB_table.csv', index_col=0)
-    table = table[table['Player ID'].notna()] #get rid of empty rows 
-
-    table = remove_unecessary_columns(table, position)    
-    table = add_injured_column(table)
-    table = table.groupby('Player ID').apply(fill_nan_age_values) #grouping by Player ID, fill the nan value of the age column
-    table = table.reset_index(drop=True) #need to do this to get rid of the playerID group by...
-
-    table = replace_missed_season_with_NA(table, ['Tm', 'Pos', 'No.', 'Awards'])
-
-    table['Ctch%'] = table['Ctch%'].str.rstrip('%')  #get rid of % sign in Ctch% column
-    # table['AV'] = pd.to_numeric(table['AV'], errors='coerce') #need to cast all AV to numeric that replace_missed_season_with_ZERO() can do its work.
-    table = replace_missed_season_with_ZERO(table, ['G', 'GS', 'AV', 'Att', 'Yds', 'TD', '1D', 'Succ%', 'Lng', 'Y/A', 'Y/G', 'A/G', 'Tgt', 'Rec', 'Yds.1',
-                                                    'Y/R', 'TD.1', '1D.1', 'Succ%.1', 'Lng.1', 'R/G', 'Y/G.1', 'Ctch%',
-                                                    'Y/Tgt', 'Touch', 'Y/Tch', 'YScm', 'RRTD', 'Fmb', 'AV'])#replace missed seasons with 0 for all the columns in the array
-    
-    
-    #get rid of rows where the player wasnt an WR
-    table = get_rid_of_invalid_positions(table, 'Pos', ['TE', 'N/A'])
-    
-    table.to_csv('/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics_clean/TE_table_clean.csv')
-
-    print('here')
 
 if __name__ == "__main__":
     main()
