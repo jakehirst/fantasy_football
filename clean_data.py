@@ -88,11 +88,48 @@ def identify_numeric_columns(table):
             columns_to_convert.append(column)
     return columns_to_convert
 
+'''Calculates the fantasy points for each row, and adds them as a separate column'''
+def add_fantasy_points(table, position):
+    #TODO DONT DO THIS YET UNTIL YOU HAVE MORE COMPLETE DATA... 
+    # QB's FOR EXAMPLE DO NOT HAVE RUSHING YDS AND REC YARDS YET...
+    # RB's FOR EXAMPLE DO NOT HAVE 2PT CONVERSIONS YET...
+    '''
+    1 pt per 25 passing yards
+    4 pts per passing TD
+    -2 pts per passing INT
+    1 pt per 10 RUSH YDS
+    6 pts per RUSH TD
+    1 pt per REC
+    1 point per 10 REC YDS
+    6 pts per REC TD
+    2 pts per 2-point conv
+    -2 pts for fumble
+    6 pts for fumble returned for TD
+    '''
+    if(position == 'RB'):
+        pts_from_rush_yds = table['Yds'] / 10.0
+        pts_from_RushandRec_TD = table['RRTD'] * 6.0
+        pts_from_REC = table['Rec']
+        pts_from_REC_YDS = table['Yds.1'] / 10
+        pts_from_Fmb = table['Fmb'] * -2
+        
+    elif(position == 'WR'):
+        pts_from_rush_yds = table['Yds.1'] / 10.0
+        pts_from_RushandRec_TD = table['RRTD'] * 6.0
+        pts_from_REC = table['Rec']
+        pts_from_REC_YDS = table['Yds'] / 10
+        pts_from_Fmb = table['Fmb'] * -2
+    elif(position == 'O_LINE'):
+        return table
+        
+    
+    
+    return table
 
 
 def main():
     positions = ['QB', 'TE', 'WR', 'RB', 'O_LINE']
-    positions = ['O_LINE']
+    positions = ['RB']
     for position in positions:
         # position = 'QB'
         table = pd.read_csv(f'/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics/{position}_table.csv', index_col=0)
@@ -114,6 +151,9 @@ def main():
         #get rid of rows where the player wasnt an WR
         table = get_rid_of_invalid_positions(table, 'Pos', position)
         print('here')
+        
+        #add fantasy_points column
+        table = add_fantasy_points(table, position)
         
         table.to_csv(f'/Users/jakehirst/Desktop/fantasy_football_predictors/Yearly_statistics_clean/{position}_table_clean.csv')
 
