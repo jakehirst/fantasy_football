@@ -2,6 +2,31 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+'''
+How transformers work:
+
+
+Embedding and positional encoding
+
+Usually, transformers are used to interpret and respond to phrases like "Children playing in the park"
+When they do this, they need to translate the text into something a computer can read, which is known as text embedding.
+Algorithms like Word2Vec help with this, and turn the text into a numeric vector. Words that have similar meaning might have
+similar numeric values, and the order of the wording is also considered.
+
+
+Encoder: Calculating multi-head self-attention
+
+Encoders recieve the text embeddings and convert them into new vectors to add information for the model to discern what to pay attention to.
+For example, the encoder would assign the most weight to "Children" "playing" and "park" in the sentence "Children playing in the park"
+To do this, encoders make 3 vectors - query vector, key vector, and value vector - for each word by multiplying the phrase by different matricies.
+
+
+Decoder: Calculating multi-head self-attention
+
+The decoder works the same as the encoder, but is trained using a different dataset.
+If the goal is to translate English to French, then the Encoder will be trained with english, and the decoder will be trained with French.
+'''
+
 class TimeSeriesTransformer(nn.Module):
     def __init__(self, input_dim, embed_dim, num_heads, ff_dim, num_transformer_blocks, dropout=0.1):
         super(TimeSeriesTransformer, self).__init__()
